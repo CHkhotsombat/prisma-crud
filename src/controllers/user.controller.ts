@@ -4,7 +4,7 @@ import prisma from "../services/prisma"
 export const userController = {
   async index(req: Request, res: Response) {
     const { email, firstName, lastName } = req.query
-    let users = await prisma.user.findMany({
+    const users = await prisma.user.findMany({
       where: {
         email: {
           contains: email as string
