@@ -1,0 +1,73 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+model User {
+  id            Int      @id @default(autoincrement())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  email         String   @unique
+  firstName     String?
+  lastName      String?
+  car           Car?
+  carBlogs      CarBlog[]
+  friendId      Int?      @unique
+  friend        User?     @relation("Friend", fields: [friendId], references: [id])
+  friendOf      User?     @relation("Friend")
+  role          Role      @default(USER)
+
+  @@index([email], name: "users_email_index")
+}
+
+model Car {
+  id            Int      @id @default(autoincrement())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  color         String
+  bought        Boolean @default(false)
+  name          String
+  userId        Int    @unique
+  user          User   @relation(fields: [userId], references: [id])
+}
+
+model CarBlog {
+  id            Int      @id @default(autoincrement())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  content       String
+  userId        Int
+  user          User    @relation(fields: [userId], references: [id])
+  categoryCarBlogs  CategoryOnCarBlogs[]
+}
+
+model CategoryCarBlog {
+  id            Int      @id @default(autoincrement())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  carBlogs      CategoryOnCarBlogs[]
+  name          String
+}
+
+model CategoryOnCarBlogs {
+  carBlogId           Int
+  carBlog             CarBlog @relation(fields: [carBlogId], references: [id])
+  categoryCarBlogId   Int
+  categoryCarBlog     CategoryCarBlog @relation(fields: [categoryCarBlogId], references: [id])
+  assignedAt          DateTime @default(now())
+  assignedBy          String?
+
+  @@id([carBlogId, categoryCarBlogId])
+}
